@@ -9,7 +9,7 @@ const LAUNCH_OPTS = {
   headless: false,
   slowMo: 50,
   args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'],
-  defaultViewport: null,
+  defaultViewport: { width: 1366, height: 900 },   // Normal size so CAPTCHA is visible
 };
 
 const ID = {
@@ -99,7 +99,7 @@ class MahabhulekhScraper {
 
       console.log('\nPlease solve the CAPTCHA and CLICK the SUBMIT button yourself.');
       console.log('Wait until you see the big 7/12 result image on screen.');
-      console.log('Do not close the browser until you see "Result page loaded successfully!"');
+      console.log('Do not close the browser until you see " Result page loaded successfully!"');
 
       await delay(4000);
 
@@ -123,7 +123,6 @@ class MahabhulekhScraper {
                                lowerHTML.includes('कॅप्चा चुकीचा') ||
                                lowerHTML.includes('incorrect captcha');
 
-        // Large image detection - this is now the primary signal
         const largeImageCount = await this.getLargeImageCount(page);
 
         const hasResultButton = lowerHTML.includes('back') || 
@@ -136,24 +135,19 @@ class MahabhulekhScraper {
           `[Poll] largeImgCount=${largeImageCount} | resultBtn=${hasResultButton} | htmlLen=${finalHTML.length} | captchaErr=${hasCaptchaError} | elapsed=${elapsed}s`
         );
 
-        // SUCCESS: Big image + result button + big HTML size
         const isRealResult = 
           largeImageCount >= 1 &&
           hasResultButton &&
-          finalHTML.length > 650000 &&   // real result has huge HTML due to image
+          finalHTML.length > 650000 &&
           !hasCaptchaError;
 
         if (isRealResult) {
           console.log(' Result page loaded successfully! (Image-based 7/12 result detected)');
           successDetected = true;
 
-          try {
-            const filename = `land_record_${fullSurveyInput.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.png`;
-            await page.screenshot({ fullPage: true, path: filename });
-            console.log(`Screenshot saved: ${filename}`);
-          } catch (e) {
-            console.log('Screenshot failed');
-          }
+          // Capture the main result image cleanly
+          await this.captureMainResultImage(page, fullSurveyInput);
+
           break;
         }
 
@@ -185,19 +179,71 @@ class MahabhulekhScraper {
     }
   }
 
-  // Helper to count large images across all frames
+  // ==================== Capture Main Result Image (Fixed) ====================
+  async captureMainResultImage(page, fullSurveyInput) {
+    try {
+      console.log('Capturing main 7/12 result image...');
+
+      await delay(1500); // wait for image to fully render
+
+      const imageHandle = await page.evaluateHandle(() => {
+        const images = Array.from(document.querySelectorAll('img'));
+
+        // Get the largest image that is likely the result
+        let best = null;
+        let maxArea = 0;
+
+        for (const img of images) {
+          const w = img.naturalWidth || img.clientWidth || 0;
+          const h = img.naturalHeight || img.clientHeight || 0;
+          const area = w * h;
+
+          if (area > maxArea && w > 600 && h > 300) {
+            maxArea = area;
+            best = img;
+          }
+        }
+        return best;
+      });
+
+      if (imageHandle) {
+        const filename = `land_record_main_${fullSurveyInput.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.png`;
+
+        await imageHandle.screenshot({
+          path: filename,
+          type: 'png',
+          omitBackground: true
+        });
+
+        console.log(` Main result image saved: ${filename}`);
+      } else {
+        console.log('Could not find main image, saving full page as fallback...');
+        const fallbackName = `land_record_full_${fullSurveyInput.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.png`;
+        await page.screenshot({ fullPage: true, path: fallbackName, type: 'png' });
+        console.log(`Fallback saved: ${fallbackName}`);
+      }
+    } catch (e) {
+      console.log('Image capture error:', e.message);
+      // Final fallback
+      try {
+        const fallbackName = `land_record_full_${fullSurveyInput.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.png`;
+        await page.screenshot({ fullPage: true, path: fallbackName });
+        console.log(`Fallback saved: ${fallbackName}`);
+      } catch (_) {}
+    }
+  }
+
   async getLargeImageCount(page) {
     let count = 0;
     for (const f of page.frames()) {
       try {
-        const foundCount = await f.evaluate(() => {
-          return Array.from(document.querySelectorAll('img')).filter(img => {
+        const found = await f.evaluate(() => 
+          Array.from(document.querySelectorAll('img')).filter(img => {
             const w = img.naturalWidth || img.clientWidth || 0;
-            const h = img.naturalHeight || img.clientHeight || 0;
-            return (w > 600 && h > 400) || w > 850;
-          }).length;
-        });
-        count += foundCount;
+            return w > 600;
+          }).length
+        );
+        count += found;
       } catch (_) {}
     }
     return count;
