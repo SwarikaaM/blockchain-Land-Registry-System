@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import LandingPage from './components/pages/LandingPage.jsx';
 import BuyerPage from './components/buyer/BuyerPage.jsx';
 import SellerPage from './components/seller/SellerPage.jsx';
@@ -12,29 +13,63 @@ import OfficerDocumentsPage from './components/officer/OfficerDocumentsPage.jsx'
 import CasesPage from './components/officer/CasesPage.jsx';
 import './tailwind.css';
 
+// ── Protected Route wrapper ────────────────────────────────────────
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-on-surface-variant font-label text-sm">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+
+      {/* Buyer routes */}
+      <Route path="/buyer" element={<ProtectedRoute><BuyerPage /></ProtectedRoute>} />
+      <Route path="/buyer/documents" element={<ProtectedRoute><DocumentsPage /></ProtectedRoute>} />
+      <Route path="/buyer/transfers" element={<ProtectedRoute><TransfersPage /></ProtectedRoute>} />
+
+      {/* Seller routes */}
+      <Route path="/seller" element={<ProtectedRoute><SellerPage /></ProtectedRoute>} />
+      <Route path="/seller/documents" element={<ProtectedRoute><SellerDocumentsPage /></ProtectedRoute>} />
+      <Route path="/seller/transfers" element={<ProtectedRoute><SellerTransfersPage /></ProtectedRoute>} />
+
+      {/* Officer routes */}
+      <Route path="/officer" element={<ProtectedRoute><OfficerPage /></ProtectedRoute>} />
+      <Route path="/officer/documents" element={<ProtectedRoute><OfficerDocumentsPage /></ProtectedRoute>} />
+      <Route path="/cases" element={<ProtectedRoute><CasesPage /></ProtectedRoute>} />
+
+      {/* Legacy routes */}
+      <Route path="/documents" element={<ProtectedRoute><DocumentsPage /></ProtectedRoute>} />
+      <Route path="/transfers" element={<ProtectedRoute><TransfersPage /></ProtectedRoute>} />
+    </Routes>
+  );
+}
+
 function App() {
   return (
     <Router>
-      <div className="dark">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/buyer" element={<BuyerPage />} />
-          <Route path="/seller" element={<SellerPage />} />
-          <Route path="/officer" element={<OfficerPage />} />
-          {/* Buyer routes */}
-          <Route path="/buyer/documents" element={<DocumentsPage />} />
-          <Route path="/buyer/transfers" element={<TransfersPage />} />
-          {/* Seller routes */}
-          <Route path="/seller/documents" element={<SellerDocumentsPage />} />
-          <Route path="/seller/transfers" element={<SellerTransfersPage />} />
-          {/* Officer routes */}
-          <Route path="/officer/documents" element={<OfficerDocumentsPage />} />
-          <Route path="/cases" element={<CasesPage />} />
-          {/* Legacy routes (default to buyer) */}
-          <Route path="/documents" element={<DocumentsPage />} />
-          <Route path="/transfers" element={<TransfersPage />} />
-        </Routes>
-      </div>
+      <AuthProvider>
+        <div className="dark">
+          <AppRoutes />
+        </div>
+      </AuthProvider>
     </Router>
   );
 }

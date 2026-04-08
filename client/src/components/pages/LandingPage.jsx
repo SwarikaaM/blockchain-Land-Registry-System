@@ -1,231 +1,192 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext.jsx";
 import Footer from "../Footer.jsx";
+import { IconBlockchain, IconWallet, IconLand, IconShield, IconTransfer, IconPolygon, IconChevron } from "../icons/Icons.jsx";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, wallet, truncatedWallet, balance, chainId, user, connectWallet, loading } = useAuth();
+  const isPolygon = chainId === 137 || chainId === 80001 || chainId === 80002;
+
+  const handleConnect = async () => {
+    if (isAuthenticated) {
+      navigate(`/${user?.role || 'buyer'}`);
+    } else {
+      await connectWallet();
+    }
+  };
 
   return (
-    <div className="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary min-h-screen flex flex-col">
-      {/* TopNavBar */}
-      <nav className="fixed top-0 w-full z-50 bg-[#0c0e14]/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-        <div className="flex justify-between items-center h-20 px-8 max-w-full mx-auto relative">
+    <div className="bg-surface text-on-surface font-body min-h-screen flex flex-col" style={{backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(116, 117, 125, 0.04) 1px, transparent 0)', backgroundSize: '32px 32px'}}>
+      {/* Navbar */}
+      <nav className="fixed top-0 w-full z-50 bg-[#0a0c12]/90 backdrop-blur-xl border-b border-[#1d1f27]/60">
+        <div className="flex justify-between items-center h-16 px-8 max-w-7xl mx-auto">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <IconBlockchain className="text-primary" size={16} />
+            </div>
+            <span className="text-lg font-bold text-[#e5e4ed] tracking-tight font-headline">DLR</span>
+          </div>
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-primary text-3xl">
-              account_balance
-            </span>
-            <span className="text-2xl font-black text-[#e5e4ed] tracking-tighter font-headline">
-              DLR
-            </span>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-[#14161e] rounded-md border border-[#1d1f27]">
+                <div className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
+                <span className="text-xs text-[#e5e4ed]/70 font-mono">{truncatedWallet}</span>
+              </div>
+            ) : (
+              <button onClick={connectWallet} className="flex items-center gap-2 px-3.5 py-1.5 bg-primary/15 border border-primary/20 rounded-md text-primary text-xs font-bold hover:bg-primary/25 transition-all">
+                <IconWallet size={14} />
+                Connect Wallet
+              </button>
+            )}
           </div>
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-md bg-secondary/10 border border-secondary/20">
-              <span className="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-              <span className="text-secondary font-label text-xs font-bold tracking-wider uppercase">
-                Polygon Active
-              </span>
-            </div>
-            <div className="flex items-center gap-3 px-4 py-2 bg-surface-container-high rounded-md border border-outline-variant/30">
-              <span className="material-symbols-outlined text-on-surface-variant text-sm">
-                sensors
-              </span>
-              <span className="font-label text-sm text-[#e5e4ed]/80 font-medium">
-                0x1a...4b5c
-              </span>
-            </div>
-          </div>
-          <div className="bg-gradient-to-r from-transparent via-[#1d1f27] to-transparent h-[1px] bottom-0 absolute left-0 right-0"></div>
         </div>
       </nav>
 
-      {/* Main Content Canvas */}
-      <main className="flex-grow pt-24 pb-12 px-8 relative overflow-hidden">
-        {/* Asymmetric Background Glow */}
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-[120px] pointer-events-none"></div>
-
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 relative z-10">
-          {/* Left Column: Hero & Onboarding */}
-          <div className="lg:col-span-7 flex flex-col gap-12">
+      {/* Main */}
+      <main className="flex-grow pt-28 pb-16 px-8 max-w-7xl mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* Left: Hero */}
+          <div className="lg:col-span-7 flex flex-col gap-10">
             <div>
-              <h1 className="font-headline text-[36px] font-bold leading-tight tracking-tight text-on-surface mb-4">
-                Decentralized Land Registry
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/8 border border-primary/15 text-primary text-[10px] font-bold uppercase tracking-widest mb-5">
+                <IconShield size={12} /> Blockchain-secured land registry
+              </div>
+              <h1 className="font-headline text-[38px] md:text-[44px] font-bold leading-[1.1] tracking-tight text-on-surface mb-4">
+                Decentralized Land
+                <br />Registry System
               </h1>
-              <p className="text-[16px] text-on-surface-variant max-w-xl font-light leading-relaxed">
-                Secure blockchain-based registration and transfer of physical
-                land assets. Built for institutional reliability and sovereign
-                ownership.
+              <p className="text-[15px] text-on-surface-variant max-w-md leading-relaxed">
+                Secure blockchain-based registration, verification, and transfer of physical land assets. Built for institutional reliability and sovereign ownership.
               </p>
             </div>
 
-            {/* Primary Action Section */}
-            <div className="flex flex-col gap-4">
-              <button
-                onClick={() => navigate("/officer")}
-                className="w-fit flex items-center gap-4 bg-gradient-to-r from-primary to-primary-dim px-8 py-4 rounded-md shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <span
-                  className="material-symbols-outlined text-on-primary-container"
-                  style={{ fontVariationSettings: '"FILL" 1' }}
-                >
-                  account_balance_wallet
+            {/* CTA */}
+            <div className="flex flex-col gap-3">
+              <button onClick={handleConnect} disabled={loading} className="w-fit flex items-center gap-3 bg-primary/15 hover:bg-primary/25 border border-primary/20 px-6 py-3 rounded-lg transition-all disabled:opacity-50 group">
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <IconWallet className="text-primary" size={18} />
+                )}
+                <span className="font-headline font-bold text-primary text-sm">
+                  {loading ? 'Connecting...' : isAuthenticated ? 'Open Dashboard' : 'Connect Wallet'}
                 </span>
-                <span className="font-headline font-bold text-on-primary-container text-lg uppercase tracking-wider">
-                  Connect Wallet
-                </span>
+                <IconChevron className="text-primary/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all" size={14} />
               </button>
+              {isAuthenticated && (
+                <p className="text-xs text-secondary font-label flex items-center gap-1.5 ml-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
+                  Connected as {truncatedWallet}
+                </p>
+              )}
             </div>
 
-            {/* Role Selection */}
-            <section className="flex flex-col gap-6">
-              <h2 className="font-headline text-[22px] font-semibold text-on-surface">
-                Choose Your Role
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Buyer Card */}
-                <Link
-                  to="/buyer"
-                  className="glass-card p-6 rounded-xl group cursor-pointer transition-all hover:bg-surface-container-high hover:translate-y-[-4px]"
-                >
-                  <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center mb-6 border border-secondary/20 transition-colors group-hover:bg-secondary/20">
-                    <span className="material-symbols-outlined text-secondary text-2xl">
-                      location_on
-                    </span>
-                  </div>
-                  <h3 className="font-headline text-xl font-bold text-on-surface mb-2">
-                    Buyer
-                  </h3>
-                  <p className="text-sm text-on-surface-variant font-body leading-relaxed">
-                    Browse registered land parcels and initiate secure purchases
-                    with escrow-protected transactions.
-                  </p>
-                </Link>
-
-                {/* Seller Card */}
-                <Link
-                  to="/seller"
-                  className="glass-card p-6 rounded-xl group cursor-pointer transition-all hover:bg-surface-container-high hover:translate-y-[-4px]"
-                >
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 border border-primary/20 transition-colors group-hover:bg-primary/20">
-                    <span className="material-symbols-outlined text-primary text-2xl">
-                      landscape
-                    </span>
-                  </div>
-                  <h3 className="font-headline text-xl font-bold text-on-surface mb-2">
-                    Seller
-                  </h3>
-                  <p className="text-sm text-on-surface-variant font-body leading-relaxed">
-                    Register land records, verify immutable ownership history,
-                    and manage multi-signature transfers.
-                  </p>
-                </Link>
+            {/* Role cards */}
+            <section className="flex flex-col gap-4">
+              <p className="text-[10px] font-label uppercase tracking-[0.15em] text-on-surface-variant/60">Select your role</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { role: 'buyer', icon: IconLand, label: 'Buyer', desc: 'Browse parcels and initiate secure purchases with escrow protection.', color: 'secondary' },
+                  { role: 'seller', icon: IconTransfer, label: 'Seller', desc: 'Register land records, verify ownership, and manage transfers.', color: 'primary' },
+                ].map(card => (
+                  <Link
+                    key={card.role}
+                    to={isAuthenticated ? `/${card.role}` : '#'}
+                    onClick={async (e) => { 
+                      if (!isAuthenticated) { 
+                        e.preventDefault(); 
+                        await connectWallet(card.role); 
+                        navigate(`/${card.role}`);
+                      } 
+                    }}
+                    className={`group p-5 rounded-xl border border-[#1d1f27]/60 bg-[#11131a] hover:bg-[#14161e] hover:border-${card.color}/20 transition-all ${!isAuthenticated ? 'opacity-50' : ''}`}
+                  >
+                    <div className={`w-9 h-9 rounded-lg bg-${card.color}/10 flex items-center justify-center mb-4`}>
+                      <card.icon className={`text-${card.color}`} size={16} />
+                    </div>
+                    <h3 className="font-headline text-base font-bold text-on-surface mb-1">{card.label}</h3>
+                    <p className="text-xs text-on-surface-variant leading-relaxed">{card.desc}</p>
+                    {!isAuthenticated && (
+                      <p className="text-[9px] text-outline mt-3 font-label uppercase tracking-widest">Connect wallet to access</p>
+                    )}
+                  </Link>
+                ))}
               </div>
             </section>
           </div>
 
-          {/* Right Column: System Status Cards */}
-          <div className="lg:col-span-5 flex flex-col gap-6">
-            {/* Network Status Card */}
-            <div className="bg-surface-container-low border border-outline-variant/10 p-6 rounded-xl">
+          {/* Right: Status panels */}
+          <div className="lg:col-span-5 flex flex-col gap-4">
+            {/* Network Status */}
+            <div className="bg-[#11131a] border border-[#1d1f27]/60 p-5 rounded-xl">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-on-surface-variant font-label text-xs uppercase tracking-widest font-bold">
-                  Network Status
-                </span>
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-secondary/20 text-secondary text-[10px] font-bold uppercase tracking-tighter">
-                  <span className="material-symbols-outlined text-[12px]">
-                    verified
-                  </span>
-                  Verified
+                <p className="text-[10px] font-label uppercase tracking-[0.15em] text-on-surface-variant/60">Network</p>
+                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                  isAuthenticated && isPolygon ? 'text-secondary' : isAuthenticated ? 'text-amber-400' : 'text-on-surface-variant/40'
+                }`}>
+                  <div className={`w-1.5 h-1.5 rounded-full ${isAuthenticated ? (isPolygon ? 'bg-secondary animate-pulse' : 'bg-amber-400') : 'bg-[#1d1f27]'}`} />
+                  {isAuthenticated ? (isPolygon ? 'Active' : 'Wrong Network') : 'Offline'}
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-secondary/5 flex items-center justify-center border border-secondary/10">
-                  <span className="material-symbols-outlined text-secondary">
-                    grid_view
-                  </span>
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isAuthenticated ? 'bg-secondary/10' : 'bg-[#1d1f27]'}`}>
+                  <IconPolygon className={isAuthenticated ? 'text-secondary' : 'text-on-surface-variant/30'} size={16} />
                 </div>
                 <div>
-                  <p className="text-on-surface font-headline font-medium text-lg">
-                    Polygon Network Connected
+                  <p className="text-sm font-medium text-on-surface">
+                    {isAuthenticated ? (isPolygon ? 'Polygon Mainnet' : `Chain ${chainId}`) : 'Not connected'}
                   </p>
-                  <p className="text-secondary font-label text-xs">
-                    Node: dl-reg-rpc-01.polygon.net
+                  <p className="text-[10px] text-on-surface-variant/50 font-mono">
+                    {isAuthenticated ? 'dl-reg-rpc-01.polygon.net' : 'Awaiting wallet'}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Active Wallet Card */}
-            <div className="bg-surface-container border border-outline-variant/10 p-6 rounded-xl relative overflow-hidden">
-              <div className="absolute top-3 right-3 opacity-10 pointer-events-none">
-                <span className="material-symbols-outlined text-6xl">account_balance_wallet</span>
-              </div>
-              <span className="text-on-surface-variant font-label text-xs uppercase tracking-widest font-bold block mb-6">
-                Active Wallet
-              </span>
+            {/* Wallet Card */}
+            <div className="bg-[#11131a] border border-[#1d1f27]/60 p-5 rounded-xl">
+              <p className="text-[10px] font-label uppercase tracking-[0.15em] text-on-surface-variant/60 mb-5">Wallet</p>
               <div className="space-y-4">
                 <div>
-                  <p className="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest mb-1">
-                    Address
-                  </p>
-                  <p className="text-on-surface font-headline font-bold text-xl tracking-tight">
-                    0x1a...4b5c
-                  </p>
+                  <p className="text-[9px] uppercase font-bold tracking-widest text-on-surface-variant/40 mb-1">Address</p>
+                  <p className="text-on-surface font-mono text-base font-medium">{isAuthenticated ? truncatedWallet : '\u2014'}</p>
                 </div>
-                <div className="pt-4 border-t border-outline-variant/10">
-                  <p className="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest mb-1">
-                    Balance
-                  </p>
-                  <p className="text-3xl font-headline font-black text-primary">
-                    12.45
-                    <span className="ml-1 text-lg font-bold text-on-surface">
-                      MATIC
-                    </span>
+                <div className="pt-3 border-t border-[#1d1f27]/60">
+                  <p className="text-[9px] uppercase font-bold tracking-widest text-on-surface-variant/40 mb-1">Balance</p>
+                  <p className="text-2xl font-headline font-bold text-primary">
+                    {balance !== null ? balance : '\u2014'}
+                    <span className="ml-1 text-sm font-medium text-on-surface-variant/60">MATIC</span>
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Profile Summary Card */}
-            <div className="bg-surface-container-high border border-outline-variant/20 p-6 rounded-xl shadow-2xl">
-              <h3 className="font-headline text-[20px] font-semibold text-on-surface mb-6">
-                Profile Summary
-              </h3>
-              <div className="space-y-4 mb-8">
-                <div className="flex justify-between items-center py-2 border-b border-outline-variant/10">
-                  <span className="text-on-surface-variant text-sm">
-                    Wallet Identifier
-                  </span>
-                  <span className="font-label text-sm text-on-surface font-medium">
-                    0x1a...4b5c
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-outline-variant/10">
-                  <span className="text-on-surface-variant text-sm">
-                    Designated Role
-                  </span>
-                  <span className="bg-primary/10 text-primary px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">
-                    Seller
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-outline-variant/10">
-                  <span className="text-on-surface-variant text-sm">
-                    Total Actions
-                  </span>
-                  <span className="font-headline text-lg text-on-surface font-bold">
-                    0
-                  </span>
-                </div>
+            {/* Profile Card */}
+            <div className="bg-[#11131a] border border-[#1d1f27]/60 p-5 rounded-xl">
+              <p className="text-[10px] font-label uppercase tracking-[0.15em] text-on-surface-variant/60 mb-5">Profile</p>
+              <div className="space-y-3">
+                {[
+                  { label: 'Wallet', value: isAuthenticated ? truncatedWallet : '\u2014' },
+                  { label: 'Role', value: user?.role || 'Not Assigned', isBadge: true },
+                  { label: 'Status', value: isAuthenticated ? 'Authenticated' : 'Not Connected', isGreen: isAuthenticated },
+                ].map((row, i) => (
+                  <div key={i} className="flex justify-between items-center py-1.5 border-b border-[#1d1f27]/40 last:border-0">
+                    <span className="text-xs text-on-surface-variant/60">{row.label}</span>
+                    {row.isBadge ? (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">{row.value}</span>
+                    ) : (
+                      <span className={`text-xs font-medium ${row.isGreen ? 'text-secondary' : 'text-on-surface-variant'}`}>{row.value}</span>
+                    )}
+                  </div>
+                ))}
               </div>
-              <button className="w-full py-3 bg-surface border border-outline-variant/30 hover:border-primary/50 text-on-surface font-headline font-bold text-xs uppercase tracking-widest rounded-md transition-all">
-                View Detailed Profile
-              </button>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
       <Footer />
     </div>
   );
