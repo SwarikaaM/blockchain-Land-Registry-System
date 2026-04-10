@@ -194,6 +194,13 @@ class CompareService {
     // 6. VERDICT LOGIC
     // ─────────────────────────────────────────────
     if (
+      result.nameMatch.passed &&
+      result.surveyMatch.passed &&
+      result.areaMatch.passed &&
+      !result.encumbranceFlag
+    ) {
+      result.verdict = 'auto_pass';
+    } else if (
       result.overallScore < 0.4 ||
       !result.surveyMatch.passed
     ) {
