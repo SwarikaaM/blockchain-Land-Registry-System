@@ -38,6 +38,7 @@ app.use('/api/v1/transfer', require('./api/v1/routes/transfer.routes'));
 app.use('/api/v1/escrow', require('./api/v1/routes/escrow.routes'));
 app.use('/api/v1/notifications', require('./api/v1/routes/notification.routes'));
 app.use('/api/v1/webhook', require('./api/v1/routes/webhook.routes'));
+app.use('/api/v1/spatial', require('./api/v1/routes/spatial.routes'));
 
 // ── 404 Handler ────────────────────────────────────────────────────
 app.use((req, res) => {
