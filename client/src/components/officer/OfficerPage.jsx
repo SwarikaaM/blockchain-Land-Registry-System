@@ -236,7 +236,7 @@ const OfficerPage = () => {
           </div>
 
           <div className="bg-[#181a20] rounded-xl border border-[#23252d] min-h-[320px] overflow-hidden relative flex flex-col">
-            <SpatialView />
+            <SpatialView landId={selected?.land?._id || selected?.landId}  showControls={true} />
             <div className="absolute bottom-4 left-4 text-[10px] text-white/90 font-medium z-[1000] drop-shadow-md">
               Spatial verification: Parcel boundaries align with municipal data.
             </div>

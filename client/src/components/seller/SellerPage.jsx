@@ -127,7 +127,7 @@ const SellerPage = () => {
             </div>
             <div className="flex-grow flex items-center justify-center bg-surface-container-low relative">
               {selectedLandId ? (
-                <SpatialView className="absolute inset-0" />
+                <SpatialView className="absolute inset-0" landId={selectedLandId} />
               ) : (
                 <div className="text-center text-on-surface-variant/40">
                   <IconMap className="mx-auto mb-3 opacity-30" size={48} />
