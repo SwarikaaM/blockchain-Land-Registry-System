@@ -33,6 +33,12 @@ class SignatureService {
       logger.info('New user created', { walletAddress, role });
     }
 
+    // Handle existing users without roles (migration fix)
+    if (!user.role) {
+      user.role = role;
+      logger.info('Updated user role', { walletAddress, role });
+    }
+
     // Update last login
     user.lastLoginAt = new Date();
     await user.save();

@@ -15,7 +15,7 @@ const logger = require('../utils/logger');
 exports.createOffer = asyncHandler(async (req, res) => {
   const { landId, price, currency } = req.body;
 
-  const land = await Land.findById(landId).populate('coOwners');
+  const land = await Land.findById(landId);
   if (!land) return res.status(404).json({ success: false, error: 'Land not found' });
 
   if (!['registered', 'listed'].includes(land.status)) {
@@ -26,9 +26,9 @@ exports.createOffer = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, error: 'Cannot buy your own land' });
   }
 
-  // Build co-owner consent array
-  const coOwnerConsents = land.coOwners.map(co => ({
-    coOwner: co._id,
+  // Build co-owner consent array - handle co-owners as ObjectIds directly
+  const coOwnerConsents = (land.coOwners || []).map(coOwnerId => ({
+    coOwner: coOwnerId,
     status: 'pending'
   }));
 

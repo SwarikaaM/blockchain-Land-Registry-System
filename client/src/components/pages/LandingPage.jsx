@@ -52,10 +52,15 @@ const LandingPage = () => {
    * Generic "Connect Wallet" CTA - defaults to main dashboard
    */
   const handleConnect = async () => {
-  if (isAuthenticated) { navigate('/'); return; }
-  if (!window.ethereum) { alert('Please install MetaMask'); return; }
-  await window.ethereum.request({ method: 'eth_requestAccounts' });
-};
+    if (isAuthenticated) { navigate('/'); return; }
+    if (!window.ethereum) { alert('Please install MetaMask'); return; }
+    
+    // Perform full SIWE authentication with buyer role
+    const result = await connectWallet('buyer');
+    if (result) {
+      navigate('/');
+    }
+  };
 
   /**
    * Debug test - basic wallet connection without auth
